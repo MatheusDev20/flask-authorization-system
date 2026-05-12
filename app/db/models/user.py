@@ -1,35 +1,20 @@
-from app.db import db
-from app.db.enums.role import Roles
+from flask_login import UserMixin
 from sqlalchemy.dialects.postgresql import ENUM as pgEnum
 from sqlalchemy.dialects.postgresql import UUID
 
-class User(db.Model):
+from app.db import db
+from app.db.enums.role import Roles
+
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(200), unique=False, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
     admin = db.Column(db.Boolean(), default=False, nullable=False)
-    role = db.Column(pgEnum(Roles), unique=False, nullable=False, default='operation')
+    role = db.Column(pgEnum(Roles), nullable=False, default='operation')
     avatar = db.Column(db.String(200), nullable=False)
     user_uuid = db.Column(UUID(as_uuid=True), nullable=False)
     extra_info = db.Column(db.String(100), nullable=True)
 
-    @property
-    def is_authenticated(self):
-        return True
-    
-    @property
-    def is_active(self):
-        return True
-
-    @property
-    def is_anonymous(self):
-        return False
-        
-    @property
-    def get_id(self):
-        return str(self.id)
-
-
-    def __repr__(self):
-        return '<User %r>' % self.username
+    def __repr__(self) -> str:
+        return f'<User {self.username!r}>'

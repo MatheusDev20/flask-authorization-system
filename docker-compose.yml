@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: docker123
+      POSTGRES_DB: library_manager
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d library_manager"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    command: sh -c "flask db upgrade && python run.py"
+    environment:
+      FLASK_APP: run.py
+      FLASK_CONFIG: dev
+      SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://postgres:docker123@db:5432/library_manager
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/usr/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

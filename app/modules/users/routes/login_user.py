@@ -21,15 +21,15 @@ def login():
         db_operations = BaseDbOperations(User)
         user_info = db_operations.get_by_email(form.data['email'])
 
-        if user_info['status'] == '404':
-            # Feedback visual user not found
-            print('Não achou usuário')
-            
+        if user_info['status'] == 404:
+            flash('User not found')
+            return render_template('login.html', title='Login', form=form)
+
         user = UseFullFunctions.sql_alchemy_to_dict(row=user_info['data'])
 
         if Bcrypt.check_password_hash(form.data['password'], user['password']):
             login_user(user_info['data'])
-    
+
             return redirect(url_for('home_bp.home'))
 
     return render_template('login.html', title='Login',form=form)
